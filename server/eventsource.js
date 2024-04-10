@@ -8,17 +8,21 @@ const emmiter = new events.EventEmitter();
 app.use(cors());
 app.use(express.json() );
 
-app.get("/get-messages", (req, res) => {
-  emmiter.once("message", (messaqe) => {
-    res.json(messaqe);
-  });
+app.get("/connect", (req, res) => {
+  res.writeHead(200,{
+    "Connection": "keep-alive",
+    "Content-Type":"text/event-stream",
+    "cache-control":"no-cache"
+  })
+  emmiter.on("message",(message) =>{
+    res.write(`data: ${JSON.stringify(message)} \n\n`)
+  })
 });
 app.post("/new-messages", (req, res) => {
   const message = req.body;
   emmiter.emit("message", message);
   res.status(200);
   res.end()
-
 });
 app.listen(PORT, () => {
   console.log(`Server working on port ${PORT}`);
